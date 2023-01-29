@@ -3,43 +3,26 @@ import "reflect-metadata";
 import { ApolloServer } from "apollo-server-express";
 import http from "http";
 import { buildSchema } from "type-graphql";
+import { PrismaClient } from "@prisma/client";
+
 import app from "./app";
 import { HelloResolver } from "./resolvers/hello.resolver";
-
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { MyContext } from "./utils/context";
 
 const PORT = process.env.PORT || 4000;
+const prisma = new PrismaClient();
 
 const main = async () => {
   const server = http.createServer(app);
-
-  // // test adding data
-  await prisma.user.create({
-    data: {
-      name: "Adama",
-      email: "diaby223.ml@gmail.com",
-      profile: { create: { bio: "Fullstack developer" } },
-      posts: {
-        create: {
-          title: "First post",
-          content: "First post content",
-          published: true,
-        },
-      },
-    },
-  });
-
-  // // test retreiving data
-  const allUsers = await prisma.user.findMany();
-  console.log(allUsers);
-
   const schema = await buildSchema({
     resolvers: [HelloResolver],
     validate: false,
   });
 
-  const apolloServer = new ApolloServer({ schema });
+  const apolloServer = new ApolloServer({
+    schema,
+    context: ({ req, res }): MyContext => ({ req, res, prisma }),
+  });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: true });
 
