@@ -6,10 +6,33 @@ import { buildSchema } from "type-graphql";
 import app from "./app";
 import { HelloResolver } from "./resolvers/hello.resolver";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 const PORT = process.env.PORT || 4000;
 
 const main = async () => {
   const server = http.createServer(app);
+
+  // // test adding data
+  await prisma.user.create({
+    data: {
+      name: "Adama",
+      email: "diaby223.ml@gmail.com",
+      profile: { create: { bio: "Fullstack developer" } },
+      posts: {
+        create: {
+          title: "First post",
+          content: "First post content",
+          published: true,
+        },
+      },
+    },
+  });
+
+  // // test retreiving data
+  const allUsers = await prisma.user.findMany();
+  console.log(allUsers);
 
   const schema = await buildSchema({
     resolvers: [HelloResolver],
