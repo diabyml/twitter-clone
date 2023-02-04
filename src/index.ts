@@ -5,9 +5,12 @@ import http from "http";
 import { buildSchema } from "type-graphql";
 import { PrismaClient } from "@prisma/client";
 
+// for session, go back to odl playground
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
+
 import app from "./app";
-import { HelloResolver } from "./resolvers/hello.resolver";
 import { MyContext } from "./utils/context";
+import { HelloResolver } from "./resolvers/hello.resolver";
 
 const PORT = process.env.PORT || 4000;
 const prisma = new PrismaClient();
@@ -22,6 +25,12 @@ const main = async () => {
   const apolloServer = new ApolloServer({
     schema,
     context: ({ req, res }): MyContext => ({ req, res, prisma }),
+    // enable this to get caching work properly
+    plugins: [
+      ApolloServerPluginLandingPageGraphQLPlayground({
+        // options
+      }),
+    ],
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: true });
