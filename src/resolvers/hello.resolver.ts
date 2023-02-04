@@ -1,5 +1,6 @@
 import { MyContext } from "src/utils/context";
 import { Ctx, Query, Resolver } from "type-graphql";
+import { User } from "../graphql/models/User";
 
 @Resolver()
 export class HelloResolver {
@@ -8,9 +9,9 @@ export class HelloResolver {
     return "hello, world";
   }
 
-  @Query(() => String)
-  async test(@Ctx() { prisma }: MyContext): Promise<any> {
-    const allUsers = await prisma.user.findMany({ include: { posts: true } });
-    return JSON.stringify(allUsers);
+  @Query(() => User)
+  async test(@Ctx() { prisma }: MyContext): Promise<User | null> {
+    const firstUser = await prisma.user.findFirst();
+    return firstUser;
   }
 }
